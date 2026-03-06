@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Overview | InnerG Intel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0a0b;
+      --surface: #141416;
+      --surface-2: #1a1a1e;
+      --border: #2a2a30;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --teal: #00D1C7;
+      --cyan: #2DE2E6;
+      --lime: #C7F464;
+      --amber: #F5A623;
+      --purple: #a855f7;
+      --pink: #ec4899;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--teal), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+    
+    .last-updated {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      opacity: 0.6;
+    }
+    
+    /* Architecture Grid */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    
+    @media (max-width: 1024px) {
+      .arch-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 640px) {
+      .arch-grid { grid-template-columns: 1fr; }
+    }
+    
+    /* Section Card */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    
+    .section-card.teal::before { background: var(--teal); }
+    .section-card.cyan::before { background: var(--cyan); }
+    .section-card.lime::before { background: var(--lime); }
+    .section-card.amber::before { background: var(--amber); }
+    .section-card.purple::before { background: var(--purple); }
+    .section-card.pink::before { background: var(--pink); }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .section-card.teal .section-icon { background: rgba(0, 209, 199, 0.15); }
+    .section-card.cyan .section-icon { background: rgba(45, 226, 230, 0.15); }
+    .section-card.lime .section-icon { background: rgba(199, 244, 100, 0.15); }
+    .section-card.amber .section-icon { background: rgba(245, 166, 35, 0.15); }
+    .section-card.purple .section-icon { background: rgba(168, 85, 247, 0.15); }
+    .section-card.pink .section-icon { background: rgba(236, 72, 153, 0.15); }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .section-card.teal .section-title { color: var(--teal); }
+    .section-card.cyan .section-title { color: var(--cyan); }
+    .section-card.lime .section-title { color: var(--lime); }
+    .section-card.amber .section-title { color: var(--amber); }
+    .section-card.purple .section-title { color: var(--purple); }
+    .section-card.pink .section-title { color: var(--pink); }
+    
+    /* Item List */
+    .item-list {
+      list-style: none;
+    }
+    
+    .item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .item-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    
+    .section-card.teal .item-bullet { background: var(--teal); }
+    .section-card.cyan .item-bullet { background: var(--cyan); }
+    .section-card.lime .item-bullet { background: var(--lime); }
+    .section-card.amber .item-bullet { background: var(--amber); }
+    .section-card.purple .item-bullet { background: var(--purple); }
+    .section-card.pink .item-bullet { background: var(--pink); }
+    
+    .item-content {
+      flex: 1;
+    }
+    
+    .item-name {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    
+    .item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .item-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-live {
+      background: rgba(0, 209, 199, 0.15);
+      color: var(--teal);
+    }
+    
+    .status-active {
+      background: rgba(199, 244, 100, 0.15);
+      color: var(--lime);
+    }
+    
+    .status-dev {
+      background: rgba(245, 166, 35, 0.15);
+      color: var(--amber);
+    }
+    
+    .status-planned {
+      background: rgba(136, 136, 136, 0.15);
+      color: var(--text-muted);
+    }
+    
+    /* Full Width Card */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    
+    /* Flow Diagram */
+    .flow-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 40px;
+    }
+    
+    .flow-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+      color: var(--teal);
+    }
+    
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .flow-node {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    
+    .flow-node-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .flow-node-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 20px;
+    }
+    
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 4px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Tech Stack */
+    .tech-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .tech-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+    
+    /* Link */
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    .item-link {
+      font-size: 11px;
+      color: var(--cyan);
+      margin-top: 4px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚙ InnerG Intel Architecture</h1>
+      <p class="subtitle">System overview — services, integrations, and data flow</p>
+      <p class="last-updated">Last updated: 2026-03-05 | Owner: Nasir (rrisan)</p>
+    </header>
+    
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Live Sites</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">12+</div>
+        <div class="stat-label">Skills</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Channels</div>
+      </div>
+    </div>
+    
+    <!-- Flow Diagram -->
+    <div class="flow-section">
+      <div class="flow-title">Data Flow Overview</div>
+      <div class="flow-diagram">
+        <div class="flow-node">
+          <div class="flow-node-icon">📱</div>
+          <div class="flow-node-label">User Input<br>(Telegram/Discord)</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">🤖</div>
+          <div class="flow-node-label">OpenClaw<br>Gateway</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">🧠</div>
+          <div class="flow-node-label">InnerGClaw<br>(Main Agent)</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">⚡</div>
+          <div class="flow-node-label">Skills &<br>Integrations</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">🌐</div>
+          <div class="flow-node-label">External<br>Services</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Architecture Grid -->
+    <div class="arch-grid">
+      
+      <!-- Core Platform -->
+      <div class="section-card teal">
+        <div class="section-header">
+          <div class="section-icon">🖥</div>
+          <div class="section-title">Core Platform</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">OpenClaw Gateway</div>
+              <div class="item-desc">Local daemon on MacBook Pro</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">InnerGClaw Agent</div>
+              <div class="item-desc">Main session — Digital Strategist</div>
+              <span class="item-status status-active">ACTIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">GitHub (innergclaw)</div>
+              <div class="item-desc">Code hosting + GitHub Pages</div>
+              <a href="https://github.com/innergclaw" class="item-link" target="_blank">github.com/innergclaw</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Communication Channels -->
+      <div class="section-card cyan">
+        <div class="section-header">
+          <div class="section-icon">💬</div>
+          <div class="section-title">Communication</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Telegram Bot</div>
+              <div class="item-desc">@INNERG_CLAW_BOT — Primary channel</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Mr Odds Topic Group</div>
+              <div class="item-desc">6 topics: Finance, Health, Business, Tech, Personal, System</div>
+              <span class="item-status status-active">ACTIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Discord</div>
+              <div class="item-desc">Configured but disabled (intent issues)</div>
+              <span class="item-status status-planned">DISABLED</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- OwnYourWeb -->
+      <div class="section-card lime">
+        <div class="section-header">
+          <div class="section-icon">🌐</div>
+          <div class="section-title">OwnYourWeb</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Landing Page</div>
+              <div class="item-desc">Main service offering</div>
+              <a href="https://innergclaw.github.io/ownyourweb-landing/" class="item-link" target="_blank">innergclaw.github.io/ownyourweb-landing</a>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Demo Sites (8 templates)</div>
+              <div class="item-desc">Restaurant, Creative, Landscaping, Beauty, Florist, Wedding x3</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Signup Form</div>
+              <div class="item-desc">Formspree integration (mreaqkdr)</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Booking</div>
+              <div class="item-desc">Cal.com — ownyourwebsystems</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- InnerG Intel Brand -->
+      <div class="section-card purple">
+        <div class="section-header">
+          <div class="section-icon">◆</div>
+          <div class="section-title">InnerG Intel</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Ecosystem Hub</div>
+              <div class="item-desc">Central landing for all InnerG projects</div>
+              <a href="https://innergclaw.github.io/innerg-ecosystem/" class="item-link" target="_blank">innergclaw.github.io/innerg-ecosystem</a>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">YouTube</div>
+              <div class="item-desc">@innergintel — Educational content</div>
+              <a href="https://youtube.com/@innergintel" class="item-link" target="_blank">youtube.com/@innergintel</a>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Discord Community</div>
+              <div class="item-desc">Application-based membership</div>
+              <span class="item-status status-dev">BUILDING</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Products -->
+      <div class="section-card amber">
+        <div class="section-header">
+          <div class="section-icon">📦</div>
+          <div class="section-title">Products</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">InnerG Prompt Vault</div>
+              <div class="item-desc">100+ prompts for creators ($29)</div>
+              <span class="item-status status-dev">READY TO LIST</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">BroToBro Journal</div>
+              <div class="item-desc">Anti-doomscroll reading experience</div>
+              <span class="item-status status-live">LIVE</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">InnerG Kalshi</div>
+              <div class="item-desc">BTC 15m prediction trader</div>
+              <span class="item-status status-active">ACTIVE</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Integrations -->
+      <div class="section-card pink">
+        <div class="section-header">
+          <div class="section-icon">🔗</div>
+          <div class="section-title">Integrations</div>
+        </div>
+        <ul class="item-list">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Cal.com</div>
+              <div class="item-desc">Booking & scheduling</div>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Formspree</div>
+              <div class="item-desc">Form submissions (mreaqkdr)</div>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Kalshi API</div>
+              <div class="item-desc">Prediction market trading</div>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">MiniMax AI</div>
+              <div class="item-desc">Alternative AI model</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Skills -->
+      <div class="section-card teal full-width">
+        <div class="section-header">
+          <div class="section-icon">⚡</div>
+          <div class="section-title">Skills & Capabilities</div>
+        </div>
+        <div class="tech-grid">
+          <span class="tech-tag">blogwatcher</span>
+          <span class="tech-tag">coding-agent</span>
+          <span class="tech-tag">discord</span>
+          <span class="tech-tag">healthcheck</span>
+          <span class="tech-tag">openai-image-gen</span>
+          <span class="tech-tag">openai-whisper</span>
+          <span class="tech-tag">session-logs</span>
+          <span class="tech-tag">skill-creator</span>
+          <span class="tech-tag">video-frames</span>
+          <span class="tech-tag">weather</span>
+          <span class="tech-tag">topic-telegram</span>
+          <span class="tech-tag">allium-onchain-data</span>
+          <span class="tech-tag">unbrowse</span>
+          <span class="tech-tag">cal-com</span>
+        </div>
+      </div>
+      
+      <!-- Pending Setup -->
+      <div class="section-card amber full-width">
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <div class="section-title">Pending Setup</div>
+        </div>
+        <ul class="item-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0;">
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Stripe Account</div>
+              <div class="item-desc">Payment processing for OwnYourWeb</div>
+              <span class="item-status status-planned">PENDING</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">Gumroad</div>
+              <div class="item-desc">Digital product sales (Prompt Vault)</div>
+              <span class="item-status status-planned">PENDING</span>
+            </div>
+          </li>
+          <li class="item">
+            <div class="item-bullet"></div>
+            <div class="item-content">
+              <div class="item-name">TikTok Scraper</div>
+              <div class="item-desc">Trending content research</div>
+              <span class="item-status status-planned">NOT BUILT</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+  </div>
+</body>
+</html>
